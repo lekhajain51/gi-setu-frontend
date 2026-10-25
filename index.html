@@ -52,18 +52,60 @@
 </div>
 <script>
 const products=[
-{name:'Kashmir Pashmina',state:'Jammu & Kashmir',category:'Textiles',emoji:'🧣',tone:'linear-gradient(135deg,#d9e2db,#b4c9bc)',story:'Fine, soft fibre and skilled weaving traditions associated with Kashmir.',maker:'Kashmir weaving community',ref:'Verify official GI record'},
-{name:'Banarasi Brocade',state:'Uttar Pradesh',category:'Textiles',emoji:'🪡',tone:'linear-gradient(135deg,#f0d0a7,#d58c75)',story:'Rich brocade weaving with intricate motifs and a long textile tradition.',maker:'Varanasi weaving community',ref:'Verify official GI record'},
-{name:'Kanchipuram Silk',state:'Tamil Nadu',category:'Textiles',emoji:'🥻',tone:'linear-gradient(135deg,#f3d2a0,#bd786a)',story:'Celebrated silk weaving associated with Kanchipuram and its temple heritage.',maker:'Kanchipuram weaving community',ref:'Verify official GI record'},
-{name:'Madhubani Painting',state:'Bihar',category:'Art',emoji:'🎨',tone:'linear-gradient(135deg,#f5d8a1,#e8b7a1)',story:'A distinctive painting tradition known for expressive lines, patterns and storytelling.',maker:'Mithila art community',ref:'Verify official GI record'},
-{name:'Blue Pottery',state:'Rajasthan',category:'Crafts',emoji:'🏺',tone:'linear-gradient(135deg,#b5d9dc,#78a9bb)',story:'Decorative pottery recognised for blue-toned designs and detailed surface patterns.',maker:'Jaipur pottery artisans',ref:'Verify official GI record'},
-{name:'Channapatna Toys',state:'Karnataka',category:'Crafts',emoji:'🪀',tone:'linear-gradient(135deg,#f5d28a,#e3a36f)',story:'Colourful turned wooden toys made through a distinctive local craft tradition.',maker:'Channapatna craft community',ref:'Verify official GI record'},
-{name:'Darjeeling Tea',state:'West Bengal',category:'Food',emoji:'🍃',tone:'linear-gradient(135deg,#d9e4b9,#94b79b)',story:'Tea associated with the Darjeeling region and its distinctive growing conditions.',maker:'Darjeeling tea growers',ref:'Verify official GI record'},
-{name:'Alphonso Mango',state:'Maharashtra',category:'Food',emoji:'🥭',tone:'linear-gradient(135deg,#f7d17f,#ed9e63)',story:'A well-known mango variety associated with parts of coastal western India.',maker:'Regional mango growers',ref:'Verify official GI record'},
-{name:'Pochampally Ikat',state:'Telangana',category:'Textiles',emoji:'🧵',tone:'linear-gradient(135deg,#e9c1b5,#c7d6b7)',story:'A textile tradition using resist-dyed yarns to create geometric patterns.',maker:'Pochampally weaving community',ref:'Verify official GI record'},
-{name:'Kullu Shawl',state:'Himachal Pradesh',category:'Textiles',emoji:'🧶',tone:'linear-gradient(135deg,#d3ddbe,#e8c6a7)',story:'Woven shawls recognised for colourful geometric borders and regional identity.',maker:'Kullu weaving community',ref:'Verify official GI record'},
-{name:'Kondapalli Toys',state:'Andhra Pradesh',category:'Crafts',emoji:'🪆',tone:'linear-gradient(135deg,#f1d9b3,#d7a77f)',story:'Lightweight painted wooden figures and toys made by traditional artisans.',maker:'Kondapalli craft community',ref:'Verify official GI record'},
-{name:'Kashmiri Saffron',state:'Jammu & Kashmir',category:'Food',emoji:'🌺',tone:'linear-gradient(135deg,#efc5a0,#dca18b)',story:'A valued spice crop associated with the saffron-growing areas of Kashmir.',maker:'Regional saffron growers',ref:'Verify official GI record'}
+
+let products = [];
+
+const API_URL = 'https://gi-setu-backend.onrender.com/api/products';
+
+function getProductStyle(category) {
+  const styles = {
+    Agriculture: ['🌾', 'linear-gradient(135deg,#d9e4b9,#94b79b)'],
+    Food: ['🍲', 'linear-gradient(135deg,#f7d17f,#ed9e63)'],
+    Textiles: ['🧵', 'linear-gradient(135deg,#e9c1b5,#c7d6b7)'],
+    Handicrafts: ['🏺', 'linear-gradient(135deg,#b5d9dc,#78a9bb)'],
+    Crafts: ['🏺', 'linear-gradient(135deg,#b5d9dc,#78a9bb)']
+  };
+
+  return styles[category] || [
+    '🌿',
+    'linear-gradient(135deg,#d9e4b9,#94b79b)'
+  ];
+}
+
+async function loadProducts() {
+  try {
+    const response = await fetch(API_URL);
+
+    if (!response.ok) {
+      throw new Error('Could not load GI products');
+    }
+
+    const data = await response.json();
+
+    products = data.map(p => {
+      const style = getProductStyle(p.category);
+
+      return {
+        id: p.id,
+        name: p.product_name,
+        state: p.state || 'India',
+        category: p.category || 'Other',
+        emoji: style[0],
+        tone: style[1],
+        story: p.description || 'Details will be updated.',
+        maker: 'Associated community information pending verification',
+        ref: p.application_number || 'Official GI reference pending verification'
+      };
+    });
+
+    setupProducts();
+    filterProducts();
+  } catch (error) {
+    console.error('Product loading failed:', error);
+    showToast('Unable to load GI products. Please try again.');
+  }
+}
+
 ];
 const sellers=[{name:'Textile Weaving Collective',region:'Varanasi, Uttar Pradesh',icon:'🧵',focus:'Brocade & handloom textiles',desc:'A sample profile for a community of skilled weavers and textile makers.'},{name:'Mithila Art Circle',region:'Mithila, Bihar',icon:'🎨',focus:'Traditional painting',desc:'A sample profile celebrating painting traditions and the artists who carry them forward.'},{name:'Blue Clay Studio',region:'Jaipur, Rajasthan',icon:'🏺',focus:'Decorative pottery',desc:'A sample profile for artisans working with regional pottery techniques.'},{name:'Hill Garden Growers',region:'Darjeeling, West Bengal',icon:'🍃',focus:'Tea & regional produce',desc:'A sample profile representing growers and local agricultural knowledge.'},{name:'Woodcraft Makers Guild',region:'Channapatna, Karnataka',icon:'🪀',focus:'Wooden toys & crafts',desc:'A sample profile for traditional wood-turning and toy-making artisans.'},{name:'Coastal Orchard Group',region:'Konkan, Maharashtra',icon:'🥭',focus:'Regional fruit growers',desc:'A sample profile for growers and local produce communities.'}];
 let activeCategory='all';let favorites=new Set();
@@ -79,7 +121,8 @@ function goPage(page){const ids=['home','explore','sellers','passport','about','
 function renderPassport(){const p=products[Number($('#passportProduct').value)||0];const ref=$('#passportCode').value.trim();$('#passportResult').innerHTML=`<span class="eyebrow">Heritage card · sample</span><div style="display:flex;gap:16px;align-items:center;margin:18px 0"><div style="width:100px;height:100px;flex-shrink:0;border-radius:14px;background:${p.tone};display:grid;place-items:center;font-size:47px">${p.emoji}</div><div><h3 style="margin:0 0 4px">${p.name}</h3><div style="color:var(--muted);font-size:12px">${p.state}</div><span style="display:inline-block;background:#fff0cf;color:#76571b;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:800;margin-top:8px">DEMO · UNVERIFIED</span></div></div><p>${p.story}</p><div style="border-top:1px solid var(--line);padding-top:15px;font-size:13px"><b>Associated maker community</b><p>${p.maker}</p><b>GI reference</b><p>${ref||'Not provided — official source required'}</p><b>Heritage notes</b><p>Origin, process, community knowledge and supporting documents can be attached here after verification.</p></div><button class="btn outline" id="savePassport">Save this sample locally</button>`;$('#savePassport').onclick=()=>showToast('This is a preview only; no record was saved.')}
 function renderSellers(){$('#sellerGrid').innerHTML=sellers.map((s,i)=>`<article class="seller-card"><div class="seller-icon">${s.icon}</div><div class="region">${s.region}</div><h3>${s.name}</h3><b style="font-size:12px;color:var(--site-primary)">${s.focus}</b><p>${s.desc}</p><button class="btn outline" data-seller="${i}">View profile →</button></article>`).join('')}
 function openSeller(i){const s=sellers[i];$('#modalArt').style.background='linear-gradient(135deg,#dce8d7,#f1d9b7)';$('#modalArt').textContent=s.icon;$('#modalContent').innerHTML=`<span class="eyebrow">Sample community profile</span><h2>${s.name}</h2><p><b>${s.region}</b></p><p>${s.desc}</p><p>Focus: ${s.focus}</p><div class="notice">This profile is illustrative. No real seller identity or contact information is provided.</div><button class="btn" id="sellerProducts">Browse related products →</button>`;$('#detailOverlay').classList.add('open');$('#sellerProducts').onclick=()=>{closeModal();goPage('explore');$('#searchInput').value=s.region.split(',')[0];filterProducts()}}
-setupProducts();renderSellers();
+loadProducts();
+renderSellers();
  document.addEventListener('click',e=>{const nav=e.target.closest('[data-page]');if(nav){e.preventDefault();goPage(nav.dataset.page);return}const fav=e.target.closest('[data-fav]');if(fav){e.stopPropagation();const i=Number(fav.dataset.fav);favorites.has(i)?favorites.delete(i):favorites.add(i);fav.textContent=favorites.has(i)?'♥':'♡';showToast(favorites.has(i)?'Added to your saved list for this preview.':'Removed from saved list.');return}const product=e.target.closest('.product-card');if(product){showProduct(Number(product.dataset.index));return}const seller=e.target.closest('[data-seller]');if(seller){openSeller(Number(seller.dataset.seller));return}const chip=e.target.closest('[data-category]');if(chip){activeCategory=chip.dataset.category;$$('[data-category]').forEach(c=>c.classList.toggle('selected',c===chip));filterProducts()}});
 $('#searchInput').addEventListener('input',filterProducts);$('#stateFilter').addEventListener('change',filterProducts);$('#sortFilter').addEventListener('change',filterProducts);$('#modalClose').onclick=closeModal;$('#detailOverlay').addEventListener('click',e=>{if(e.target.id==='detailOverlay')closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('product-card'))showProduct(Number(e.target.dataset.index))});$('#viewPassport').onclick=renderPassport;$('#sendMessage').onclick=()=>showToast('Contact form is a demo; connect a backend to send messages.');$('#languageBtn').onclick=()=>showToast('Language selector can be connected when translations are added.');$('#menuToggle').onclick=()=>$('#navlinks').classList.toggle('open');
 </script>
