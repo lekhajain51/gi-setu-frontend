@@ -44,6 +44,30 @@ app.get('/api/db-health', async (req, res) => {
   }
 });
 
+app.get('/api/products', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM gi_products ORDER BY product_name'
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Fetch products failed:', error.message);
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
+});
+
+app.get('/api/sellers', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM sellers ORDER BY seller_name'
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Fetch sellers failed:', error.message);
+    res.status(500).json({ error: 'Failed to fetch sellers' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`GI Setu backend running on port ${PORT}`);
 });
