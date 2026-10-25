@@ -51,8 +51,6 @@
 <div class="detail-overlay" id="detailOverlay" role="dialog" aria-modal="true" aria-label="Product details"><div class="modal"><button class="modal-close" id="modalClose" aria-label="Close details">×</button><div class="modal-art" id="modalArt"></div><div class="modal-content" id="modalContent"></div></div></div><div class="toast" id="toast" role="status"></div>
 </div>
 <script>
-const products=[
-
 let products = [];
 
 const API_URL = 'https://gi-setu-backend.onrender.com/api/products';
@@ -100,13 +98,12 @@ async function loadProducts() {
 
     setupProducts();
     filterProducts();
+
   } catch (error) {
     console.error('Product loading failed:', error);
     showToast('Unable to load GI products. Please try again.');
   }
 }
-
-];
 const sellers=[{name:'Textile Weaving Collective',region:'Varanasi, Uttar Pradesh',icon:'🧵',focus:'Brocade & handloom textiles',desc:'A sample profile for a community of skilled weavers and textile makers.'},{name:'Mithila Art Circle',region:'Mithila, Bihar',icon:'🎨',focus:'Traditional painting',desc:'A sample profile celebrating painting traditions and the artists who carry them forward.'},{name:'Blue Clay Studio',region:'Jaipur, Rajasthan',icon:'🏺',focus:'Decorative pottery',desc:'A sample profile for artisans working with regional pottery techniques.'},{name:'Hill Garden Growers',region:'Darjeeling, West Bengal',icon:'🍃',focus:'Tea & regional produce',desc:'A sample profile representing growers and local agricultural knowledge.'},{name:'Woodcraft Makers Guild',region:'Channapatna, Karnataka',icon:'🪀',focus:'Wooden toys & crafts',desc:'A sample profile for traditional wood-turning and toy-making artisans.'},{name:'Coastal Orchard Group',region:'Konkan, Maharashtra',icon:'🥭',focus:'Regional fruit growers',desc:'A sample profile for growers and local produce communities.'}];
 let activeCategory='all';let favorites=new Set();
 const $=s=>document.querySelector(s);const $$=s=>document.querySelectorAll(s);
