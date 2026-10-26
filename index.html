@@ -104,22 +104,93 @@ async function loadProducts() {
     showToast('Unable to load GI products. Please try again.');
   }
 }
-const sellers=[{name:'Textile Weaving Collective',region:'Varanasi, Uttar Pradesh',icon:'🧵',focus:'Brocade & handloom textiles',desc:'A sample profile for a community of skilled weavers and textile makers.'},{name:'Mithila Art Circle',region:'Mithila, Bihar',icon:'🎨',focus:'Traditional painting',desc:'A sample profile celebrating painting traditions and the artists who carry them forward.'},{name:'Blue Clay Studio',region:'Jaipur, Rajasthan',icon:'🏺',focus:'Decorative pottery',desc:'A sample profile for artisans working with regional pottery techniques.'},{name:'Hill Garden Growers',region:'Darjeeling, West Bengal',icon:'🍃',focus:'Tea & regional produce',desc:'A sample profile representing growers and local agricultural knowledge.'},{name:'Woodcraft Makers Guild',region:'Channapatna, Karnataka',icon:'🪀',focus:'Wooden toys & crafts',desc:'A sample profile for traditional wood-turning and toy-making artisans.'},{name:'Coastal Orchard Group',region:'Konkan, Maharashtra',icon:'🥭',focus:'Regional fruit growers',desc:'A sample profile for growers and local produce communities.'}];
-let activeCategory='all';let favorites=new Set();
-const $=s=>document.querySelector(s);const $$=s=>document.querySelectorAll(s);
-function card(p){const i=products.indexOf(p);return `<article class="product-card" data-index="${i}" tabindex="0" role="button" aria-label="View ${p.name}"><div class="product-visual" style="background:${p.tone}"><span>${p.emoji}</span><span class="label">${p.category}</span><button class="heart" data-fav="${i}" aria-label="Save ${p.name}">${favorites.has(i)?'♥':'♡'}</button></div><div class="product-info"><div class="region">${p.state}</div><h3>${p.name}</h3><p>${p.story}</p><div class="product-foot"><span>Origin story</span><b>Explore ↗</b></div></div></article>`}
-function renderGrid(target,arr){$(target).innerHTML=arr.length?arr.map(card).join(''):'<div class="empty">No products match your search. Try another name or region.</div>';}
-function setupProducts(){renderGrid('#featuredGrid',products.slice(0,4));renderGrid('#allProductsGrid',products);const states=[...new Set(products.map(p=>p.state))].sort();$('#stateFilter').innerHTML='<option value="all">All regions</option>'+states.map(s=>`<option>${s}</option>`).join('');$('#passportProduct').innerHTML=products.map((p,i)=>`<option value="${i}">${p.name} — ${p.state}</option>`).join('');}
-function filterProducts(){const q=$('#searchInput').value.toLowerCase();const state=$('#stateFilter').value;const sort=$('#sortFilter').value;let arr=products.filter(p=>(activeCategory==='all'||p.category===activeCategory)&&(state==='all'||p.state===state)&&[p.name,p.state,p.category,p.story].join(' ').toLowerCase().includes(q));arr.sort((a,b)=>sort==='state'?a.state.localeCompare(b.state):a.name.localeCompare(b.name));renderGrid('#allProductsGrid',arr)}
-function showToast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),2400)}
-function showProduct(i){const p=products[i];if(!p)return;$('#modalArt').style.background=p.tone;$('#modalArt').textContent=p.emoji;$('#modalContent').innerHTML=`<span class="eyebrow">${p.category} · ${p.state}</span><h2>${p.name}</h2><p>${p.story}</p><p>GI Setu brings together the product's origin, traditional knowledge and the people associated with its making or cultivation.</p><div class="modal-meta"><b>Associated community</b><br>${p.maker}<br><br><b>GI record</b><br>${p.ref}<br><br><span style="color:#99733c">Demo content — official status has not been verified.</span></div><button class="btn" style="margin-top:18px" id="modalPassport">View passport concept →</button>`;$('#detailOverlay').classList.add('open');$('#modalPassport').onclick=()=>{closeModal();goPage('passport');$('#passportProduct').value=i;renderPassport()}}
-function closeModal(){$('#detailOverlay').classList.remove('open')}
-function goPage(page){const ids=['home','explore','sellers','passport','about','contact'];if(!ids.includes(page))page='home';$('.home-view').style.display=page==='home'?'block':'none';$$('.page').forEach(el=>el.classList.remove('active'));if(page!=='home')$('#'+page+'Page').classList.add('active');$$('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('#navlinks').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'});if(page==='explore')filterProducts()}
-function renderPassport(){const p=products[Number($('#passportProduct').value)||0];const ref=$('#passportCode').value.trim();$('#passportResult').innerHTML=`<span class="eyebrow">Heritage card · sample</span><div style="display:flex;gap:16px;align-items:center;margin:18px 0"><div style="width:100px;height:100px;flex-shrink:0;border-radius:14px;background:${p.tone};display:grid;place-items:center;font-size:47px">${p.emoji}</div><div><h3 style="margin:0 0 4px">${p.name}</h3><div style="color:var(--muted);font-size:12px">${p.state}</div><span style="display:inline-block;background:#fff0cf;color:#76571b;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:800;margin-top:8px">DEMO · UNVERIFIED</span></div></div><p>${p.story}</p><div style="border-top:1px solid var(--line);padding-top:15px;font-size:13px"><b>Associated maker community</b><p>${p.maker}</p><b>GI reference</b><p>${ref||'Not provided — official source required'}</p><b>Heritage notes</b><p>Origin, process, community knowledge and supporting documents can be attached here after verification.</p></div><button class="btn outline" id="savePassport">Save this sample locally</button>`;$('#savePassport').onclick=()=>showToast('This is a preview only; no record was saved.')}
-function renderSellers(){$('#sellerGrid').innerHTML=sellers.map((s,i)=>`<article class="seller-card"><div class="seller-icon">${s.icon}</div><div class="region">${s.region}</div><h3>${s.name}</h3><b style="font-size:12px;color:var(--site-primary)">${s.focus}</b><p>${s.desc}</p><button class="btn outline" data-seller="${i}">View profile →</button></article>`).join('')}
-function openSeller(i){const s=sellers[i];$('#modalArt').style.background='linear-gradient(135deg,#dce8d7,#f1d9b7)';$('#modalArt').textContent=s.icon;$('#modalContent').innerHTML=`<span class="eyebrow">Sample community profile</span><h2>${s.name}</h2><p><b>${s.region}</b></p><p>${s.desc}</p><p>Focus: ${s.focus}</p><div class="notice">This profile is illustrative. No real seller identity or contact information is provided.</div><button class="btn" id="sellerProducts">Browse related products →</button>`;$('#detailOverlay').classList.add('open');$('#sellerProducts').onclick=()=>{closeModal();goPage('explore');$('#searchInput').value=s.region.split(',')[0];filterProducts()}}
+let sellers = [];
+
+const SELLERS_API_URL =
+  'https://gi-setu-backend-test.onrender.com/api/sellers';
+
+async function loadSellers() {
+  const grid = $('#sellerGrid');
+  grid.innerHTML = '<p>Loading sellers...</p>';
+
+  try {
+    const response = await fetch(SELLERS_API_URL);
+
+    if (!response.ok) {
+      throw new Error('Failed to load sellers');
+    }
+
+    const data = await response.json();
+
+    sellers = data.map(s => ({
+      id: s.id,
+      name: s.seller_name || 'Unnamed seller',
+      state: s.state || '',
+      district: s.district || '',
+      region: [s.district, s.state].filter(Boolean).join(', '),
+      email: s.email || '',
+      phone: s.phone || '',
+      isVerified: s.is_verified,
+      focus: s.is_verified ? 'Verified seller' : 'Verification pending',
+      desc: 'Seller registered with GI Setu.'
+    }));
+
+    renderSellers();
+  } catch (error) {
+    console.error('Seller loading failed:', error);
+    grid.innerHTML =
+      '<p>Unable to load sellers. Please try again later.</p>';
+  }
+}
+
+function renderSellers() {
+  const grid = $('#sellerGrid');
+
+  if (!sellers.length) {
+    grid.innerHTML =
+      '<div class="empty">No sellers registered yet.</div>';
+    return;
+  }
+
+  grid.innerHTML = sellers.map((s, i) => `
+    <article class="seller-card">
+      <div class="seller-icon">🏪</div>
+      <div class="region">${s.region || s.state || 'India'}</div>
+      <h3>${s.name}</h3>
+      <b style="font-size:12px;color:var(--site-primary)">
+        ${s.focus}
+      </b>
+      <p>${s.desc}</p>
+      <button class="btn outline" data-seller="${i}">
+        View profile →
+      </button>
+    </article>
+  `).join('');
+}
+
+function openSeller(i) {
+  const s = sellers[i];
+
+  if (!s) return;
+
+  $('#modalArt').style.background =
+    'linear-gradient(135deg,#dce8d7,#f1d9b7)';
+  $('#modalArt').textContent = '🏪';
+
+  $('#modalContent').innerHTML = `
+    <span class="eyebrow">Seller profile</span>
+    <h2>${s.name}</h2>
+    <p><b>${s.region || s.state || 'India'}</b></p>
+    <p>${s.desc}</p>
+    <p>${s.focus}</p>
+    <p>${s.isVerified ? 'Verified seller' : 'Verification pending'}</p>
+  `;
+
+  $('#detailOverlay').classList.add('open');
+}
+
 loadProducts();
-renderSellers();
+loadSellers();
  document.addEventListener('click',e=>{const nav=e.target.closest('[data-page]');if(nav){e.preventDefault();goPage(nav.dataset.page);return}const fav=e.target.closest('[data-fav]');if(fav){e.stopPropagation();const i=Number(fav.dataset.fav);favorites.has(i)?favorites.delete(i):favorites.add(i);fav.textContent=favorites.has(i)?'♥':'♡';showToast(favorites.has(i)?'Added to your saved list for this preview.':'Removed from saved list.');return}const product=e.target.closest('.product-card');if(product){showProduct(Number(product.dataset.index));return}const seller=e.target.closest('[data-seller]');if(seller){openSeller(Number(seller.dataset.seller));return}const chip=e.target.closest('[data-category]');if(chip){activeCategory=chip.dataset.category;$$('[data-category]').forEach(c=>c.classList.toggle('selected',c===chip));filterProducts()}});
 $('#searchInput').addEventListener('input',filterProducts);$('#stateFilter').addEventListener('change',filterProducts);$('#sortFilter').addEventListener('change',filterProducts);$('#modalClose').onclick=closeModal;$('#detailOverlay').addEventListener('click',e=>{if(e.target.id==='detailOverlay')closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('product-card'))showProduct(Number(e.target.dataset.index))});$('#viewPassport').onclick=renderPassport;$('#sendMessage').onclick=()=>showToast('Contact form is a demo; connect a backend to send messages.');$('#languageBtn').onclick=()=>showToast('Language selector can be connected when translations are added.');$('#menuToggle').onclick=()=>$('#navlinks').classList.toggle('open');
 </script>
